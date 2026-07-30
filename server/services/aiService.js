@@ -4,7 +4,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const EXTRACTION_PROMPT = `Sos un asistente Sos un asistente que extrae requisitos de una vacante laboral.
+const EXTRACTION_PROMPT = `Sos un asistente que extrae requisitos de una vacante laboral.
 Devolvé EXCLUSIVAMENTE un JSON válido (sin texto adicional, sin markdown, sin backticks) con esta forma exacta:
 
 {
@@ -19,7 +19,7 @@ Texto de la vacante:
 
 exports.extractJobRequirements = async (jobText) => {
     const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
         messages: [
             {
@@ -28,11 +28,15 @@ exports.extractJobRequirements = async (jobText) => {
             }
         ]
     });
-    const rawText = response.content[0].text.trim();
 
-        try{
-            return JSON.parse(rawText);
-        } catch(err){
-            throw new Error('La IA devolvio un formato invalido. '+ rawText.slice(0, 200))
-        }
+    let rawText = response.content[0].text.trim();
+
+    // Si la IA envolvió la respuesta en un bloque de markdown, lo limpiamos
+    rawText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    try {
+        return JSON.parse(rawText);
+    } catch(err) {
+        throw new Error('La IA devolvio un formato invalido. ' + rawText.slice(0, 200));
     }
+}

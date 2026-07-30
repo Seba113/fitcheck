@@ -3,12 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const analysisRoutes = require('./routes/analysisRoutes');
+const profileRoutes = require('./routes/profileRoutes');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use('/api/analyses', analysisRoutes);
+app.use('/api/profile', profileRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'FitCheck API funcionando' });
